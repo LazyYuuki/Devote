@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/Devote/static/css/main.e6c13ad2.css",
+    "main.js": "/Devote/static/js/main.6d283fb0.js",
+    "index.html": "/Devote/index.html",
+    "main.e6c13ad2.css.map": "/Devote/static/css/main.e6c13ad2.css.map",
+    "main.6d283fb0.js.map": "/Devote/static/js/main.6d283fb0.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.6d283fb0.js"
+  ]
+}
