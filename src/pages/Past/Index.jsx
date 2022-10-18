@@ -13,7 +13,7 @@ const FAKE_DATA = {
 }
 
 // =============================================================================
-export default function Home() {
+export default function Past() {
 
   const [address, setAddress] = React.useState(null)
   const [balance, setBalance] = React.useState(null)
@@ -28,6 +28,7 @@ export default function Home() {
             description={FAKE_DATA.description}
             link={FAKE_DATA.link}
             startTime={FAKE_DATA.startTime}
+            disableVote
           />
         </div>
       )}

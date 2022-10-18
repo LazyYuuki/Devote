@@ -1,10 +1,11 @@
+import Typography from '@mui/material/Typography';
 
 
 // =============================================================================
-export default function Vote() {
+export default function Body() {
   return (
     <div>
-      Vote
+
     </div>
   )
 }
