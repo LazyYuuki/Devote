@@ -1,10 +1,8 @@
 import React from 'react';
-import { Link } from "react-router-dom";
 import web3 from "web3";
 
 import Button from "@mui/material/Button";
 import Paper from "@mui/material/Paper";
-import Typography from "@mui/material/Typography";
 
 import InfoBox from "pages/Account/InfoBox";
 
