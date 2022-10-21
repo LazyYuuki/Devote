@@ -24,6 +24,6 @@ jobs:
           yarn install
           git config --global user.email 'github-actions@github.com'
           git config --global user.name 'github-actions'
-          git remote set-url origin https://${{ secrets.DEPLOY }}@github.com/LazyYuuki/Devote
+          git remote set-url origin https://${{ github.token }}@github.com/LazyYuuki/Devote
           yarn build
           yarn deploy
