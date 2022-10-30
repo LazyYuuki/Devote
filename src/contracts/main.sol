@@ -9,75 +9,71 @@ contract main {
     uint8 public constant maxVote = 20;
     uint8 public constant credits = 10;
 
-    uint public constant maxRounds = 9999;
-    
+    uint256 public constant maxRounds = 9999;
+
     address public owner;
 
     struct policy {
-        uint idPolicy;
+        uint256 idPolicy;
         string policyName;
         string policyDesc;
-        uint votes;
-        uint uniqueVotes;
+        uint256 votes;
+        uint256 uniqueVotes;
         bool completed;
         bool passed;
     }
 
     struct voter {
-        uint voteCredits; 
-        uint stagedVote;
-        uint[] votedList;
+        uint256 voteCredits;
+        uint256 stagedVote;
+        uint256[] votedList;
     }
 
     struct rounds {
         policy[] votingPolicies;
     }
 
-    mapping (address => voter) mapVoter;
-    mapping (uint => address) mapVoterIndex;
+    mapping(address => voter) mapVoter;
+    mapping(uint256 => address) mapVoterIndex;
 
-    uint public indexVoter = 0;
+    uint256 public indexVoter = 0;
 
     policy[] public policyList;
-    uint public indexPolicy = 0;
+    uint256 public indexPolicy = 0;
 
     rounds[] roundsList;
-    uint public currRound = 0;
-
+    uint256 public currRound = 0;
 
     constructor() {
         owner = msg.sender;
     }
 
-    event announceWinner(uint winner, string name);
+    event announceWinner(uint256 winner, string name);
     event announceDraw(string message);
 
-    modifier roleOwner(){
+    modifier roleOwner() {
         require(isOwner(), "Not owner!");
         _;
     }
 
-    function isOwner(
-    ) private view returns (bool) {
+    function isOwner() private view returns (bool) {
         return owner == msg.sender;
     }
 
-
-
     function policy_create(
-        string calldata _policyName, 
+        string calldata _policyName,
         string calldata _policyDesc
-    ) private 
-    roleOwner {
-        policyList.push(policy(indexPolicy, _policyName, _policyDesc, 0, 0, false, false));
+    ) private roleOwner {
+        policyList.push(
+            policy(indexPolicy, _policyName, _policyDesc, 0, 0, false, false)
+        );
 
         indexPolicy++;
     }
 
-    function voter_onboard(
-    ) private {        
+    function voter_onboard() private {
         voter memory _voter;
-        uint[] memory emptyList;
+        uint256[] memory emptyList;
 
         _voter = voter(credits, 0, emptyList);
         mapVoter[msg.sender] = _voter;
@@ -86,78 +82,80 @@ contract main {
         indexVoter++;
     }
 
-    function policy_vote(
-        uint _idPolicy,
-        uint vote
-    ) private {
+    function policy_vote(uint256 _idPolicy, uint256 vote) private {
         require(vote != 0, "Add vote!");
         require(vote <= maxVote, "Max vote is 20!");
         require(mapVoter[msg.sender].voteCredits > vote, "Not enough credits!");
 
-        for (uint i = 0; i < (indexPolicy + 1); i++){
-            if (mapVoter[msg.sender].votedList[i] == _idPolicy){
+        for (uint256 i = 0; i < (indexPolicy + 1); i++) {
+            if (mapVoter[msg.sender].votedList[i] == _idPolicy) {
                 revert("Already voted!");
             }
         }
- 
+
         policyList[_idPolicy].votes += vote;
         policyList[_idPolicy].uniqueVotes++;
 
         mapVoter[msg.sender].stagedVote += vote;
         mapVoter[msg.sender].votedList.push(_idPolicy);
     }
-    
-    function end_vote(
-    ) private 
-    roleOwner {
-        uint winner = maxRounds;
-        uint currVote = 0;
-        uint currUniqueVote = 0;
-        uint policiesCurrRound = 0;
-        
-        uint totalVotes = 0;
-        uint dividendVote = 0;
+
+    function end_vote() private roleOwner {
+        uint256 winner = maxRounds;
+        uint256 currVote = 0;
+        uint256 currUniqueVote = 0;
+        uint256 policiesCurrRound = 0;
+
+        uint256 totalVotes = 0;
+        uint256 dividendVote = 0;
 
         bool noWinner = false;
 
         // find policies in this round
-        for (uint i = 0; i < (indexPolicy + 1); i++){
+        for (uint256 i = 0; i < (indexPolicy + 1); i++) {
             if (policyList[i].completed == false) {
                 policyList[i].completed = true;
                 roundsList[currRound].votingPolicies.push(policyList[i]);
                 policiesCurrRound++;
             }
         }
-        
+
         // find winner
-        for (uint i = 0; i < (policiesCurrRound + 1); i++){
+        for (uint256 i = 0; i < (policiesCurrRound + 1); i++) {
             totalVotes += roundsList[currRound].votingPolicies[i].votes;
 
-            if (roundsList[currRound].votingPolicies[i].votes > currVote){
+            if (roundsList[currRound].votingPolicies[i].votes > currVote) {
+                winner = roundsList[currRound].votingPolicies[i].idPolicy;
+                currVote = roundsList[currRound].votingPolicies[i].votes;
+                currUniqueVote = roundsList[currRound]
+                    .votingPolicies[i]
+                    .uniqueVotes;
+
+                noWinner = false;
+            } else if (
+                roundsList[currRound].votingPolicies[i].votes == currVote
+            ) {
+                if (
+                    roundsList[currRound].votingPolicies[i].uniqueVotes >
+                    currUniqueVote
+                ) {
                     winner = roundsList[currRound].votingPolicies[i].idPolicy;
-                    currVote = roundsList[currRound].votingPolicies[i].votes;
-                    currUniqueVote = roundsList[currRound].votingPolicies[i].uniqueVotes;
 
                     noWinner = false;
-                }
-            else if (roundsList[currRound].votingPolicies[i].votes == currVote){
-                if (roundsList[currRound].votingPolicies[i].uniqueVotes > currUniqueVote){
-                    winner = roundsList[currRound].votingPolicies[i].idPolicy;
-
-                    noWinner = false;
-                }
-                else {
+                } else {
                     noWinner = true;
                 }
             }
         }
 
-        if (!noWinner){
+        if (!noWinner) {
             // redistribute votes
             dividendVote = totalVotes / (indexVoter + 1);
 
-            for (uint i = 0; i < (indexVoter + 1); i++){
-                mapVoter[mapVoterIndex[i]].voteCredits -= mapVoter[mapVoterIndex[i]].stagedVote;
+            for (uint256 i = 0; i < (indexVoter + 1); i++) {
+                mapVoter[mapVoterIndex[i]].voteCredits -= mapVoter[
+                    mapVoterIndex[i]
+                ].stagedVote;
                 mapVoter[mapVoterIndex[i]].voteCredits += dividendVote;
 
                 mapVoter[mapVoterIndex[i]].stagedVote = 0;
@@ -166,10 +164,9 @@ contract main {
             // policy passed
             policyList[winner].passed = true;
             emit announceWinner(winner, policyList[winner].policyName);
-        }
-        else {
+        } else {
             //revert votes back
-            for (uint i = 0; i < (indexVoter + 1); i++){
+            for (uint256 i = 0; i < (indexVoter + 1); i++) {
                 mapVoter[mapVoterIndex[i]].stagedVote = 0;
             }
 
