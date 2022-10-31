@@ -1,17 +1,23 @@
 import * as React from 'react';
+import moment from 'moment';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import CardActions from '@mui/material/CardActions';
-import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import Tooltip from '@mui/material/Tooltip';
+import Button from '@mui/material/Button';
 
-import InsertLinkIcon from '@mui/icons-material/InsertLink';
-import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
-import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import Action from "components/TopicCard/Action";
+import Timer from "components/TopicCard/Timer";
+import VoteCount from "components/TopicCard/VoteCount";
+import AddressContext from "components/Context";
+import { endPolicy, withdrawBid } from "contracts/utils";
 
 export default function TopicCard(props) {
+
+  const address = React.useContext(AddressContext)
+  const handlePolicy = () => endPolicy(address, props.id)
+  const handleWithdraw = () => withdrawBid(address, props.id)
 
   return (
     <Card sx={{ 
@@ -20,7 +26,7 @@ export default function TopicCard(props) {
       borderRadius: 8,
     }}>
       <CardHeader
-        title={props.title}
+        title={"ID " + props.id + ": " + props.title}
         titleTypographyProps={{
           variant: "h6"
         }}
@@ -30,6 +36,10 @@ export default function TopicCard(props) {
         }}
       />
 
+      <Timer 
+        startTime={props.startTime}
+        duration={props.duration}
+      />
       <CardContent>
         <Typography variant="body2" color="text.secondary"
           sx={{fontWeight: "bold"}}
@@ -40,47 +50,61 @@ export default function TopicCard(props) {
         <Typography variant="body2" color="text.secondary">
           {props.description}
         </Typography>
+        <VoteCount policyID={props.id}/>
       </CardContent>
 
       <CardActions disableSpacing>
-        <Tooltip title="Full link to policy" placement="top">
-          <IconButton aria-label="open full link"
-            href={props.link}
-            target="_blank"
-            rel="noopener"
-          >
-            <InsertLinkIcon />
-          </IconButton>
-        </Tooltip>
-
-        <div style={{flex: 1}}/>
-
-        {
-          props.disableVote ? 
-          <></>
-          :
-          <>
-            <Tooltip title="For" placement="top">
-              <IconButton aria-label="open full link">
-                <CheckCircleOutlinedIcon 
-                  fontSize="large"
-                  sx={{color: "green"}}
-                />
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title="Against" placement="top">
-              <IconButton aria-label="open full link">
-                <CancelOutlinedIcon 
-                  fontSize="large"
-                  sx={{color: "red"}}
-                />
-              </IconButton>
-            </Tooltip>
-          </>
-        }
+        <Action 
+          policyID={props.id}
+          link={props.link}
+          disableVote={props.disableVote}
+        />
       </CardActions>
+
+      <div style={{
+        textAlign: "center",
+        marginBottom: 16
+      }}>
+        {
+          props.disableEndPolicy ?
+          <>
+            <Typography variant="h6">
+              {props.result}
+            </Typography>
+            <Button
+              disabled={parseInt(props.startTime) + parseInt(props.duration) > moment().unix()}
+              onClick={handleWithdraw}
+              variant="outlined"
+              sx={{
+                color: "#948afa",
+                borderColor: "#948afa",
+                ":hover": {
+                  borderColor: "#1b1557"
+                }
+              }}
+            >
+              Withdraw Bid
+            </Button>
+          </>
+          :
+          <Button
+            disabled={parseInt(props.startTime) + parseInt(props.duration) > moment().unix()}
+            onClick={handlePolicy}
+            variant="outlined"
+            sx={{
+              color: "#948afa",
+              borderColor: "#948afa",
+              ":hover": {
+                borderColor: "#1b1557"
+              }
+            }}
+          >
+            End Policy
+          </Button>
+        }
+      </div>
 
     </Card>
   );
+  
 }

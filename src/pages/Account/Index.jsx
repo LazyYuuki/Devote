@@ -5,15 +5,18 @@ import Button from "@mui/material/Button";
 import Paper from "@mui/material/Paper";
 
 import InfoBox from "pages/Account/InfoBox";
+import PolicyBox from "pages/Account/PolicyBox";
+import AddressContext from "components/Context";
 
 // =============================================================================
 
 
 // =============================================================================
-export default function Account() {
+export default function UserAccount() {
 
-  const [address, setAddress] = React.useState(null)
+  const address = React.useContext(AddressContext)
   const [balance, setBalance] = React.useState(null)
+  getBallance()
 
   return(
     <div>
@@ -39,39 +42,22 @@ export default function Account() {
       </Paper>
 
       <div style={{height: 24}}/>
-
-      <div style={{textAlign: 'center'}}>
-        <Button
-          variant="outlined"
-          disabled={address}
-          onClick={() => getWalletInfo()}
-          sx={{
-            color: "#948afa",
-            borderColor: "#948afa",
-            ":hover": {
-              borderColor: "#1b1557"
-            }
-          }}
-        >
-          {address ? "Metamask connected" : "Connect MetaMask"}
-        </Button>
-      </div>
+  
+      <PolicyBox />
 
     </div>
   )
 
-  async function getWalletInfo() {
-    let account = await window.ethereum.request({method:'eth_requestAccounts'})
+  async function getBallance() {
     let balance = await window.ethereum.request({
       method:'eth_getBalance',
-      params: [account[0], 'latest']
+      params: [address[0], 'latest']
     }).then(res => {
       let wei = web3.utils.hexToNumberString(res)
       let ether = web3.utils.fromWei(wei, 'ether')
       return ether
     })
 
-    setAddress(account)
     setBalance(balance)
   }
 }
