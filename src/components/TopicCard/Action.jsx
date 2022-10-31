@@ -89,7 +89,6 @@ export default function Action(props) {
                 top: '40%',
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
-                width: 400,
                 border: '2px solid #000',
                 borderRadius: 24,
                 padding: 16,
